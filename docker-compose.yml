@@ -1,0 +1,128 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: euroquiz-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-euroquiz}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-euroquiz123}
+      POSTGRES_DB: ${POSTGRES_DB:-euroquiz}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-euroquiz} -d ${POSTGRES_DB:-euroquiz}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - euroquiz-net
+
+  server1:
+    build: .
+    container_name: euroquiz-server1
+    restart: unless-stopped
+    command: python server/app.py
+    environment:
+      SERVER_NAME: servidor-1
+      SERVER_PORT: 5000
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER:-euroquiz}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-euroquiz123}
+      POSTGRES_DB: ${POSTGRES_DB:-euroquiz}
+    volumes:
+      - ./server:/app/server
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - euroquiz-net
+
+  server2:
+    build: .
+    container_name: euroquiz-server2
+    restart: unless-stopped
+    command: python server/app.py
+    environment:
+      SERVER_NAME: servidor-2
+      SERVER_PORT: 5000
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER:-euroquiz}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-euroquiz123}
+      POSTGRES_DB: ${POSTGRES_DB:-euroquiz}
+    volumes:
+      - ./server:/app/server
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - euroquiz-net
+
+  server3:
+    build: .
+    container_name: euroquiz-server3
+    restart: unless-stopped
+    command: python server/app.py
+    environment:
+      SERVER_NAME: servidor-3
+      SERVER_PORT: 5000
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER:-euroquiz}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-euroquiz123}
+      POSTGRES_DB: ${POSTGRES_DB:-euroquiz}
+    volumes:
+      - ./server:/app/server
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - euroquiz-net
+
+  balancer:
+    build: .
+    container_name: euroquiz-balancer
+    restart: unless-stopped
+    command: python balancer/app.py
+    environment:
+      BALANCER_PORT: 8000
+      SERVERS: "http://server1:5000,http://server2:5000,http://server3:5000"
+      LOG_FILE: /app/logs/balancer.log
+    ports:
+      - "${BALANCER_PORT:-8000}:8000"
+    volumes:
+      - ./balancer:/app/balancer
+      - ./logs:/app/logs
+    depends_on:
+      - server1
+      - server2
+      - server3
+    networks:
+      - euroquiz-net
+
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: euroquiz-ngrok
+    restart: unless-stopped
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
+    command:
+      - "http"
+      - "--url=${NGROK_DOMAIN}"
+      - "http://balancer:8000"
+    ports:
+      - "4040:4040"
+    depends_on:
+      - balancer
+    networks:
+      - euroquiz-net
+
+volumes:
+  postgres_data:
+
+networks:
+  euroquiz-net:
+    driver: bridge

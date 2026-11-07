@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Eurovision Quiz - Fim de Jogo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-white min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-slate-800 rounded-xl p-8 shadow-2xl border border-slate-700 text-center">
+        <h2 class="text-3xl font-extrabold text-red-500 mb-2">Fim de Jogo!</h2>
+        <p class="text-slate-400 mb-6">Você errou a pergunta, {{ nickname }}.</p>
+        
+        <div class="bg-slate-900 p-4 rounded-lg mb-6 border border-slate-700">
+            <span class="text-sm text-slate-400 block">Pontuação Final Obtida</span>
+            <span class="text-3xl font-bold text-yellow-400">{{ pontuacao }} pts</span>
+        </div>
+
+        <a href="{{ url_for('index') }}" class="block w-full py-3 bg-purple-600 hover:bg-purple-500 rounded-lg font-bold transition">
+            Voltar ao Início
+        </a>
+    </div>
+</body>
+</html>

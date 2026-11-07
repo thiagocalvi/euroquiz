@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Eurovision Quiz - Pergunta</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-white min-h-screen flex flex-col justify-center items-center p-4">
+    <div class="max-w-2xl w-full bg-slate-800 rounded-xl p-6 shadow-2xl border border-slate-700">
+        
+        <!-- Cabeçalho com Informações da Partida -->
+        <div class="flex justify-between items-center border-b border-slate-700 pb-4 mb-4 text-sm text-slate-400">
+            <div>Jogador: <span class="font-bold text-white">{{ dados.nickname }}</span></div>
+            <div>Pergunta: <span class="font-bold text-purple-400">{{ dados.ordem_pergunta }} / {{ dados.total_perguntas }}</span></div>
+            <div>Nível: <span class="font-bold text-yellow-400">{{ dados.nivel }}</span></div>
+            <div>Pontuação: <span class="font-bold text-green-400">{{ dados.pontuacao_atual }} pts</span></div>
+        </div>
+
+        <!-- Enunciado -->
+        <h3 class="text-xl font-semibold mb-6 text-slate-100">{{ dados.enunciado }}</h3>
+
+        <!-- Formulário de Resposta -->
+        <form method="POST" action="{{ url_for('pergunta') }}" class="space-y-3 mb-6">
+            <input type="hidden" name="acao" value="responder">
+            {% for alt in dados.alternativas %}
+                <label class="flex items-center p-4 bg-slate-900 rounded-lg border border-slate-700 {% if alt.eliminada %}opacity-40 line-through cursor-not-allowed{% else %}hover:border-purple-500 cursor-pointer{% endif %} transition">
+                    <input type="radio" name="alternativa" value="{{ alt.id }}" {% if alt.eliminada %}disabled{% else %}required{% endif %} class="form-radio text-purple-600">
+                    <span class="ml-3 font-medium">{{ alt.id }}) {{ alt.texto }}</span>
+                </label>
+            {% endfor %}
+            <button type="submit" class="w-full mt-4 py-3 bg-purple-600 hover:bg-purple-500 rounded-lg font-bold transition">
+                Confirmar Resposta
+            </button>
+        </form>
+
+        <!-- Ajudas Disponíveis -->
+        <div class="border-t border-slate-700 pt-4">
+            <h4 class="text-xs uppercase font-bold text-slate-400 mb-2">Ajudas Disponíveis:</h4>
+            <div class="grid grid-cols-3 gap-2">
+                <form method="POST" action="{{ url_for('pergunta') }}">
+                    <input type="hidden" name="acao" value="meio_meio">
+                    <button type="submit" {% if not dados.ajuda_meio_meio %}disabled{% endif %} 
+                        class="w-full py-2 px-3 text-xs font-bold rounded bg-slate-700 hover:bg-slate-600 disabled:opacity-40 disabled:cursor-not-allowed">
+                        1/2 Meio a Meio
+                    </button>
+                </form>
+                <form method="POST" action="{{ url_for('pergunta') }}">
+                    <input type="hidden" name="acao" value="pulo">
+                    <button type="submit" {% if not dados.ajuda_pulo %}disabled{% endif %} 
+                        class="w-full py-2 px-3 text-xs font-bold rounded bg-slate-700 hover:bg-slate-600 disabled:opacity-40 disabled:cursor-not-allowed">
+                        Pular Questão
+                    </button>
+                </form>
+                <form method="POST" action="{{ url_for('pergunta') }}">
+                    <input type="hidden" name="acao" value="passe_livre">
+                    <button type="submit" {% if not dados.ajuda_passe_livre or dados.nivel == 'Final' %}disabled{% endif %} 
+                        class="w-full py-2 px-3 text-xs font-bold rounded bg-slate-700 hover:bg-slate-600 disabled:opacity-40 disabled:cursor-not-allowed">
+                        Passe Livre
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

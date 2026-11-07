@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Eurovision Quiz - Início</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-white min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-slate-800 rounded-xl p-8 shadow-2xl text-center border border-slate-700">
+        <h1 class="text-3xl font-extrabold text-purple-400 mb-2">Eurovision Quiz</h1>
+        <p class="text-slate-400 mb-8">Teste seus conhecimentos sobre o maior festival da canção!</p>
+        
+        <div class="space-y-4">
+            <a href="{{ url_for('novo_jogo') }}" class="block w-full py-3 px-4 bg-purple-600 hover:bg-purple-500 rounded-lg font-bold transition">
+                Iniciar Novo Jogo
+            </a>
+            <a href="{{ url_for('ranking') }}" class="block w-full py-3 px-4 bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold transition">
+                Visualizar Maiores Pontuações
+            </a>
+        </div>
+    </div>
+</body>
+</html>

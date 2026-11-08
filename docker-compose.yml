@@ -21,10 +21,11 @@ services:
       - euroquiz-net
 
   server1:
-    build: .
+    image: python:3.12-slim
     container_name: euroquiz-server1
     restart: unless-stopped
-    command: python server/app.py
+    working_dir: /app
+    command: sh -c "pip install --no-cache-dir -q psycopg2-binary && python -u server/app.py"
     environment:
       SERVER_NAME: servidor-1
       SERVER_PORT: 5000
@@ -42,10 +43,11 @@ services:
       - euroquiz-net
 
   server2:
-    build: .
+    image: python:3.12-slim
     container_name: euroquiz-server2
     restart: unless-stopped
-    command: python server/app.py
+    working_dir: /app
+    command: sh -c "pip install --no-cache-dir -q psycopg2-binary && python -u server/app.py"
     environment:
       SERVER_NAME: servidor-2
       SERVER_PORT: 5000
@@ -63,10 +65,11 @@ services:
       - euroquiz-net
 
   server3:
-    build: .
+    image: python:3.12-slim
     container_name: euroquiz-server3
     restart: unless-stopped
-    command: python server/app.py
+    working_dir: /app
+    command: sh -c "pip install --no-cache-dir -q psycopg2-binary && python -u server/app.py"
     environment:
       SERVER_NAME: servidor-3
       SERVER_PORT: 5000
@@ -84,10 +87,11 @@ services:
       - euroquiz-net
 
   balancer:
-    build: .
+    image: python:3.12-slim
     container_name: euroquiz-balancer
     restart: unless-stopped
-    command: python balancer/app.py
+    working_dir: /app
+    command: python -u balancer/app.py
     environment:
       BALANCER_PORT: 8000
       SERVERS: "http://server1:5000,http://server2:5000,http://server3:5000"
@@ -104,22 +108,22 @@ services:
     networks:
       - euroquiz-net
 
-  ngrok:
-    image: ngrok/ngrok:latest
-    container_name: euroquiz-ngrok
-    restart: unless-stopped
-    environment:
-      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
-    command:
-      - "http"
-      - "--url=${NGROK_DOMAIN}"
-      - "http://balancer:8000"
-    ports:
-      - "4040:4040"
-    depends_on:
-      - balancer
-    networks:
-      - euroquiz-net
+  # ngrok:
+  #   image: ngrok/ngrok:latest
+  #   container_name: euroquiz-ngrok
+  #   restart: unless-stopped
+  #   environment:
+  #     NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
+  #   command:
+  #     - "http"
+  #     - "--url=${NGROK_DOMAIN}"
+  #     - "http://balancer:8000"
+  #   ports:
+  #     - "4040:4040"
+  #   depends_on:
+  #     - balancer
+  #   networks:
+  #     - euroquiz-net
 
 volumes:
   postgres_data:

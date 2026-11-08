@@ -7,6 +7,7 @@ from flask import Flask, redirect, render_template, request, session, url_for
 load_dotenv()
 
 app = Flask(__name__)
+app.secret_key = 'eurovision_quiz_secret_key'
 
 # Endereço de acesso balanceador
 BALANCER_URL = os.getenv("BALANCER_URL", "http://localhost:8000").rstrip("/")

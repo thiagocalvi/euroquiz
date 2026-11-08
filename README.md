@@ -33,7 +33,7 @@ A execução do sistema pode ser feita em **2 dispositivos** (ou localmente em u
 
 2. Construa as imagens e inicie os serviços via **Docker Compose**:
    ```bash
-   docker compose up --build -d postgres server1 server2 server3 balancer
+   docker compose up -d
    ```
   
 3. Verifique se os containers estão em execução:

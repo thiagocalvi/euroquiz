@@ -108,22 +108,22 @@ services:
     networks:
       - euroquiz-net
 
-  # ngrok:
-  #   image: ngrok/ngrok:latest
-  #   container_name: euroquiz-ngrok
-  #   restart: unless-stopped
-  #   environment:
-  #     NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
-  #   command:
-  #     - "http"
-  #     - "--url=${NGROK_DOMAIN}"
-  #     - "http://balancer:8000"
-  #   ports:
-  #     - "4040:4040"
-  #   depends_on:
-  #     - balancer
-  #   networks:
-  #     - euroquiz-net
+  ngrok:
+     image: ngrok/ngrok:latest
+     container_name: euroquiz-ngrok
+     restart: unless-stopped
+     environment:
+       NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
+     command:
+       - "http"
+       - "--url=${NGROK_DOMAIN}"
+       - "http://balancer:8000"
+     ports:
+       - "4040:4040"
+     depends_on:
+       - balancer
+     networks:
+       - euroquiz-net
 
 volumes:
   postgres_data:

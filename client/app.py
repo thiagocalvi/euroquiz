@@ -1,46 +1,67 @@
 import os
 import time
+import urllib.parse
+import urllib.request
 import xmlrpc.client
 from dotenv import load_dotenv
 from flask import Flask, redirect, render_template, request, session, url_for
 
-load_dotenv()
+load_dotenv(override=True)
 
 app = Flask(__name__)
 app.secret_key = 'eurovision_quiz_secret_key'
 
 # Endereço de acesso balanceador
-BALANCER_URL = os.getenv("BALANCER_URL", "http://localhost:8000").rstrip("/")
+BALANCER_URL = os.getenv("BALANCER_URL", "http://localhost:8000").strip().rstrip("/")
 CLIENT_PORT = int(os.getenv("CLIENT_PORT", "3000"))
 
 
 class NgrokXMLRPCTransport(xmlrpc.client.Transport):
-    """Transporte HTTP para XML-RPC adiciona header para evitar bloqueio do ngrok gratuito."""
+    """
+    Transporte XML-RPC compatível com túneis HTTP/HTTPS do ngrok gratuito.
+    Adiciona o header 'ngrok-skip-browser-warning' e segue redirecionamentos 307/308.
+    """
 
-    def send_headers(self, connection, headers):
-        headers.append(("ngrok-skip-browser-warning", "true"))
-        super().send_headers(connection, headers)
+    def single_request(self, host, handler, request_body, verbose=False):
+        self.verbose = verbose
+        scheme = "https" if BALANCER_URL.startswith("https://") else "http"
+        url = f"{scheme}://{host}{handler}"
 
-
-class NgrokXMLRPCSafeTransport(xmlrpc.client.SafeTransport):
-    """Transporte HTTPS para XML-RPC que adiciona header para evitar bloqueio do ngrok gratuito."""
-
-    def send_headers(self, connection, headers):
-        headers.append(("ngrok-skip-browser-warning", "true"))
-        super().send_headers(connection, headers)
+        for _ in range(5):
+            req = urllib.request.Request(
+                url,
+                data=request_body,
+                headers={
+                    "Content-Type": "text/xml; charset=utf-8",
+                    "User-Agent": "EuroQuiz-XMLRPC-Client/1.0",
+                    "ngrok-skip-browser-warning": "true",
+                },
+                method="POST",
+            )
+            try:
+                with urllib.request.urlopen(req, timeout=10) as resp:
+                    return self.parse_response(resp)
+            except urllib.error.HTTPError as err:
+                if err.code in (301, 302, 303, 307, 308):
+                    new_url = err.headers.get("Location")
+                    if new_url:
+                        url = urllib.parse.urljoin(url, new_url)
+                        print(f"[CLIENT RPC] Redirecionamento {err.code} -> {url}", flush=True)
+                        continue
+                raise xmlrpc.client.ProtocolError(
+                    host + handler,
+                    err.code,
+                    err.reason,
+                    err.headers,
+                )
 
 
 def get_rpc_proxy() -> xmlrpc.client.ServerProxy:
     """Cria o cliente XML-RPC conectado ao endereço do Balanceador de Carga."""
     rpc_endpoint = f"{BALANCER_URL}/RPC2"
-    transport = (
-        NgrokXMLRPCSafeTransport()
-        if rpc_endpoint.startswith("https://")
-        else NgrokXMLRPCTransport()
-    )
     return xmlrpc.client.ServerProxy(
         rpc_endpoint,
-        transport=transport,
+        transport=NgrokXMLRPCTransport(),
         allow_none=True,
         encoding="utf-8",
     )

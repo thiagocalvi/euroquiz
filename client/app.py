@@ -11,8 +11,12 @@ load_dotenv(override=True)
 app = Flask(__name__)
 app.secret_key = 'eurovision_quiz_secret_key'
 
-# Endereço de acesso balanceador
-BALANCER_URL = os.getenv("BALANCER_URL", "http://localhost:8000").strip().rstrip("/")
+# Endereço de acesso ao balanceador (padrão já aponta para o túnel público do ngrok)
+BALANCER_URL = (
+    os.getenv("BALANCER_URL", "https://cradling-language-nuclei.ngrok-free.dev")
+    .strip()
+    .rstrip("/")
+)
 CLIENT_PORT = int(os.getenv("CLIENT_PORT", "3000"))
 
 

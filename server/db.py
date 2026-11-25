@@ -41,30 +41,48 @@ def nickname_exists(nickname: str) -> bool:
 
 
 def get_random_question(level: str, exclude_ids: list[int]) -> dict | None:
-    """Sorteia uma pergunta do nível solicitado que ainda não foi usada na partida."""
+    """
+    Sorteia uma pergunta do nível solicitado que:
+    Não foi usada na partida atual (exclude_ids);
+    Prioriza perguntas que não saíram nas partidas recentes (evitando repetição entre jogos seguidos),
+       mantendo o sorteio aleatório (RANDOM()) dentro do grupo disponível.
+    """
     with get_db_cursor() as cur:
-        if exclude_ids:
-            cur.execute(
-                """
-                SELECT id, level, statement, option_a, option_b, option_c, option_d, correct_option
-                FROM questions
-                WHERE level = %s AND id != ALL(%s)
-                ORDER BY RANDOM()
-                LIMIT 1;
-                """,
-                (level, exclude_ids),
+        cur.execute(
+            """
+            WITH recent_questions AS (
+                SELECT current_question_id
+                FROM (
+                    SELECT current_question_id, MAX(id) AS last_id
+                    FROM game_history
+                    WHERE question_level = %s
+                    GROUP BY current_question_id
+                    ORDER BY last_id DESC
+                    LIMIT 8
+                ) r
+            ),
+            usage_stats AS (
+                SELECT current_question_id, COUNT(DISTINCT nickname) AS times_asked
+                FROM game_history
+                WHERE question_level = %s
+                GROUP BY current_question_id
             )
-        else:
-            cur.execute(
-                """
-                SELECT id, level, statement, option_a, option_b, option_c, option_d, correct_option
-                FROM questions
-                WHERE level = %s
-                ORDER BY RANDOM()
-                LIMIT 1;
-                """,
-                (level,),
-            )
+            SELECT
+                q.id, q.level, q.statement,
+                q.option_a, q.option_b, q.option_c, q.option_d, q.correct_option
+            FROM questions q
+            LEFT JOIN recent_questions rq ON rq.current_question_id = q.id
+            LEFT JOIN usage_stats us ON us.current_question_id = q.id
+            WHERE q.level = %s
+              AND NOT (q.id = ANY(%s))
+            ORDER BY
+                CASE WHEN rq.current_question_id IS NULL THEN 0 ELSE 1 END ASC,
+                COALESCE(us.times_asked, 0) ASC,
+                RANDOM()
+            LIMIT 1;
+            """,
+            (level, level, level, exclude_ids or []),
+        )
         return cur.fetchone()
 
 

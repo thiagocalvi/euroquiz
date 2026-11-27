@@ -13,17 +13,21 @@ Trabalho Prático da disciplina **DIN6920 - Sistemas Distribuídos** (Bacharelad
 - **SGBD / Banco de Dados:** **PostgreSQL 16** (`postgres:16-alpine`), inicializado automaticamente pelo script `database/init.sql`.
 - **Acesso Externo:** **ngrok** (`ngrok/ngrok:latest`), expondo exclusivamente a porta `8000` do Balanceador de Carga para acesso externo pelos clientes.
 
-### Bibliotecas Utilizadas
+### Bibliotecas e Ferramentas Utilizadas
 
 #### Bibliotecas Nativas do Python
 - `xmlrpc.server` e `xmlrpc.client`: Implementação dos servidores RPC, do despacho no balanceador e das chamadas remotas no cliente.
 - `socketserver` (`ThreadingMixIn`) e `threading`: Suporte a múltiplos clientes simultâneos e controle de concorrência (*thread-safe*) no índice do Round-Robin e na escrita do arquivo de log.
-- `os`, `random`, `time`, `datetime`, `contextlib`: Manipulação de variáveis de ambiente, sorteio de questões/alternativas e controle de tempo.
+- `os`, `random`, `time`, `datetime`, `contextlib`, `urllib`, `ssl`: Manipulação de variáveis de ambiente, sorteio de questões/alternativas, controle de tempo e transporte HTTP/HTTPS.
 
 #### Bibliotecas Adicionais (`requirements.txt`)
 1. **`Flask==3.0.3`**: Utilizado exclusivamente na aplicação do **Cliente** (`client/app.py`) para renderizar a interface gráfica Web (as 6 telas obrigatórias) no navegador do jogador.
 2. **`psycopg2-binary==2.9.9`**: Driver PostgreSQL utilizado pelos **3 Servidores** (`server/db.py`) para consultar o banco de questões e persistir todas as ações e o histórico das partidas.
 3. **`python-dotenv==1.0.1`**: Utilizado para carregar as configurações do arquivo `.env`.
+
+#### Ferramentas Adicionais Utilizadas
+1. **`Docker` (Docker Engine) e `Docker Compose`**: Ferramentas adicionais de containerização e orquestração utilizadas no dispositivo servidor para criar, isolar e executar os containers do banco de dados PostgreSQL (`euroquiz-postgres`), das 3 instâncias independentes de servidores (`euroquiz-server1`, `euroquiz-server2`, `euroquiz-server3`), do balanceador de carga (`euroquiz-balancer`) e do agente do `ngrok` (`euroquiz-ngrok`), interconectados através de uma rede virtual local (`euroquiz-net`).
+2. **`ngrok`**: Ferramenta adicional obrigatória utilizada como túnel reverso para expor exclusivamente a porta `8000` do Balanceador de Carga para acesso externo pelos clientes via internet.
 
 ---
 
@@ -66,7 +70,9 @@ A arquitetura foi projetada para execução distribuída em **2 dispositivos com
 
 ---
 
-### Passo 1: Executar o Dispositivo Servidor (Docker Compose + ngrok)
+### Passo 1: Executar o Dispositivo Servidor (Docker + Docker Compose + ngrok)
+
+No computador do **Servidor**, é necessário ter as ferramentas adicionais **Docker** (`docker.io` / Docker Engine) e **Docker Compose** (`docker-compose-v2`) instaladas.
 
 1. Na raiz do projeto, crie o arquivo `.env` a partir do `.env.example`:
    ```bash

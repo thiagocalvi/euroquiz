@@ -194,3 +194,12 @@ Para encerrar toda a aplicação do servidor de uma só vez, utilize um dos coma
   - **1/2 Meio a Meio (`meio_meio`):** Sorteia 2 alternativas incorretas da questão atual e as elimina da tela, restando a correta e 1 incorreta.
   - **Pular Questão (`pulo`):** Permite pular a pergunta atual, sorteando uma nova questão do mesmo nível ainda não apresentada na partida. Pode ser acionada mesmo após o uso do "Meio a Meio".
   - **Passe Livre (`passe_livre`):** O jogador acerta automaticamente a pergunta atual e avança para a próxima, recebendo apenas a pontuação base do nível (sem pontuação bônus de tempo). Não pode ser utilizada na Pergunta Final (questão 10).
+
+---
+
+## Declaração de Uso de Inteligência Artificial
+
+Em conformidade com as diretrizes, declaramos que ferramentas de Inteligência Artificial generativa foram utilizadas de forma complementar e sob revisão da equipe para:
+- Auxiliar na estruturação e estilização visual das telas HTML da **interface do cliente** (`client/templates/`), sendo toda a lógica de integração com as chamadas **RPC** e demais funcionalidades desenvolvidas pela equipe;
+- Auxiliar na configuração do ambiente de containers com **Docker** e **Docker Compose** (`docker-compose.yml`);
+- Aprimorar a consulta SQL do mecanismo de **sorteio aleatório das perguntas** (`get_random_question` em `server/db.py`), priorizando questões que não saíram nas partidas recentes para evitar a repetição frequente de perguntas entre jogos consecutivos.

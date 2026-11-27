@@ -2,6 +2,11 @@
 
 Trabalho Prático da disciplina **DIN6920 - Sistemas Distribuídos** (Bacharelado em Ciência da Computação — Universidade Estadual de Maringá - UEM), ministrada pelo Prof. Dr. Alisson Renan Svaigen.
 
+## Equipe
+- **Alexandre Tonet Herman** — RA: 134248
+- **Eduardo Angelo Rozada Minholi** — RA: 134932
+- **Thiago Henrique Calvi** — RA: 134955
+
 ---
 
 ## Especificações Técnicas
